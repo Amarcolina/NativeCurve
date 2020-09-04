@@ -183,6 +183,9 @@ namespace Unity.Collections {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
+            if (_count == 1) {
+                return this[0].Value;
+            }
 
             if (t < _startTime) {
                 AdjustTimeWithMode(ref t, _preWrapMode);
@@ -190,18 +193,30 @@ namespace Unity.Collections {
                 AdjustTimeWithMode(ref t, _postWrapMode);
             }
 
+            int lowerBound = 0;
+            int upperBound = _count - 1;
+
+            while (true) {
+                //Break out once we have closed the bound
+                if (upperBound == lowerBound + 1) {
+                    break;
+                }
+
+                int midpoint = lowerBound + (upperBound - lowerBound) / 2;
+
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            Assert.IsTrue(t >= _startTime);
-            Assert.IsTrue(t <= _endTime);
+                Assert.AreNotEqual(lowerBound, midpoint);
+                Assert.AreNotEqual(upperBound, midpoint);
 #endif
 
-            for (int i = 1; i < _count; i++) {
-                if (t < this[i].Time) {
-                    return EvalCurved(this[i - 1], this[i], t);
+                if (this[midpoint].Time > t) {
+                    upperBound = midpoint;
+                } else {
+                    lowerBound = midpoint;
                 }
             }
 
-            return this[_count - 1].Value;
+            return EvalCurved(this[lowerBound], this[upperBound], t);
         }
 
         [StructLayout(LayoutKind.Sequential)]
