@@ -28,6 +28,8 @@ namespace Unity.Collections {
     /// This container must be manually disposed of when you are finished with it, by calling Dispose. Alternatively 
     /// you can also attribute it with [DeallocateOnJobCompletion] and it will be automatically disposed of when that
     /// job is finished.
+    /// 
+    /// NOTE that this curve representation does not currently support custom curve weights!
     /// </summary>
     [NativeContainer]
     [NativeContainerIsReadOnly]
